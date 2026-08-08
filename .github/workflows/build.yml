@@ -28,20 +28,20 @@ jobs:
         run: |
           ZIP_FILE=$(find . -maxdepth 2 -name "*.zip" | head -n 1)
           echo "Unzipping file: $ZIP_FILE"
-          unzip -o "$ZIP_FILE" -d ./extracted_app
+          unzip -o "$ZIP_FILE" -d ./extracted_app[span_2](start_span)[span_2](end_span)
 
           PROJ_DIR=$(dirname $(find ./extracted_app -name "build.gradle.kts" -o -name "build.gradle" | head -n 1))
           echo "Project directory: $PROJ_DIR"
 
-          cp -r $PROJ_DIR/* .
+          cp -r $PROJ_DIR/* .[span_3](start_span)[span_3](end_span)
 
-          # Create both .env and .env.example files at root and app directory
-          echo "GEMINI_API_KEY=AIzaSyPlaceholderKeyForBuildPurposes123" > .env
-          echo "GEMINI_API_KEY=MY_GEMINI_API_KEY" > .env.example
-          echo "GEMINI_API_KEY=AIzaSyPlaceholderKeyForBuildPurposes123" > app/.env
-          echo "GEMINI_API_KEY=MY_GEMINI_API_KEY" > app/.env.example
+          # Create both .env and .env.example files at root and app directory[span_4](start_span)[span_4](end_span)
+          echo "GEMINI_API_KEY=AIzaSyPlaceholderKeyForBuildPurposes123" > .env[span_5](start_span)[span_5](end_span)
+          echo "GEMINI_API_KEY=MY_GEMINI_API_KEY" > .env.example[span_6](start_span)[span_6](end_span)
+          echo "GEMINI_API_KEY=AIzaSyPlaceholderKeyForBuildPurposes123" > app/.env[span_7](start_span)[span_7](end_span)
+          echo "GEMINI_API_KEY=MY_GEMINI_API_KEY" > app/.env.example[span_8](start_span)[span_8](end_span)
 
-          # Generate clean app/build.gradle.kts with Compose Plugin included for Kotlin 2.0+
+          # Fix app/build.gradle.kts to use standard compileSdk 35
           cat << 'EOF' > app/build.gradle.kts
           import com.google.gms.googleservices.GoogleServicesPlugin.MissingGoogleServicesStrategy
 
@@ -164,8 +164,10 @@ jobs:
           }
           EOF
 
-      - name: Setup Gradle Environment
+      - name: Setup Gradle Environment (Cache Disabled)
         uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-disabled: true
 
       - name: Setup Keystores
         run: |
