@@ -21,10 +21,15 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+      - name: Setup Android SDK & Accept Licenses
+        uses: android-actions/setup-android@v3
 
-      - name: Setup Environment Variables & Dummy Keystore
+      - name: Auto-Generate Gradle Wrapper
+        run: |
+          gradle wrapper --gradle-version 8.7
+          chmod +x gradlew
+
+      - name: Setup Environment Variables & Keystores
         run: |
           if [ ! -f .env ]; then
             echo "GEMINI_API_KEY=AIzaSyPlaceholderKeyForBuildPurposes123" > .env
@@ -34,13 +39,12 @@ jobs:
             keytool -genkeypair -v -keystore my-upload-key.jks -alias upload -keyalg RSA -keysize 2048 -validity 10000 -storepass dummyPass123 -keypass dummyPass123 -dname "CN=Build, OU=Dev, O=App, L=City, ST=State, C=IN"
           fi
 
-      - name: Build Debug APK
-        run: gradle assembleDebug --stacktrace
-        env:
-          GEMINI_API_KEY: "AIzaSyPlaceholderKeyForBuildPurposes123"
+          if [ ! -f debug.keystore ]; then
+            keytool -genkeypair -v -keystore debug.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Android Debug, O=Android, C=US"
+          fi
 
-      - name: Build Release APK & AAB
-        run: gradle assembleRelease bundleRelease --stacktrace
+      - name: Build Debug APK, Release APK & AAB
+        run: ./gradlew assembleDebug assembleRelease bundleRelease --no-daemon --stacktrace
         env:
           KEYSTORE_PATH: "my-upload-key.jks"
           STORE_PASSWORD: "dummyPass123"
