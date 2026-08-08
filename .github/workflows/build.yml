@@ -21,8 +21,8 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Make Gradle Executable
-        run: chmod +x gradlew
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
 
       - name: Setup Environment Variables & Dummy Keystore
         run: |
@@ -35,12 +35,12 @@ jobs:
           fi
 
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace
+        run: gradle assembleDebug --stacktrace
         env:
           GEMINI_API_KEY: "AIzaSyPlaceholderKeyForBuildPurposes123"
 
       - name: Build Release APK & AAB
-        run: ./gradlew assembleRelease bundleRelease --stacktrace
+        run: gradle assembleRelease bundleRelease --stacktrace
         env:
           KEYSTORE_PATH: "my-upload-key.jks"
           STORE_PASSWORD: "dummyPass123"
