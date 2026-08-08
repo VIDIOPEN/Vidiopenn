@@ -26,19 +26,16 @@ jobs:
 
       - name: Unzip Source Code & Fix Project Structure
         run: |
-          # Dhoondho ki .zip file kahan hai aur unzip karo
           ZIP_FILE=$(find . -maxdepth 2 -name "*.zip" | head -n 1)
           echo "Unzipping file: $ZIP_FILE"
           unzip -o "$ZIP_FILE" -d ./extracted_app
 
-          # Android project path locate karo
           PROJ_DIR=$(dirname $(find ./extracted_app -name "build.gradle.kts" -o -name "build.gradle" | head -n 1))
           echo "Project directory: $PROJ_DIR"
 
-          # Project files ko root me copy karo
           cp -r $PROJ_DIR/* .
-          
-          # Fixed build.gradle.kts set karo (SDK 35)
+
+          # Create a perfectly valid app/build.gradle.kts without syntax errors
           cat << 'EOF' > app/build.gradle.kts
           import com.google.gms.googleservices.GoogleServicesPlugin.MissingGoogleServicesStrategy
 
@@ -94,10 +91,6 @@ jobs:
               compileOptions {
                   sourceCompatibility = JavaVersion.VERSION_17
                   targetCompatibility = JavaVersion.VERSION_17
-              }
-
-              kotlinOptions {
-                  jvmTarget = "17"
               }
 
               buildFeatures {
