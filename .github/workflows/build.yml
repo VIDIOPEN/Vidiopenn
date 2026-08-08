@@ -26,7 +26,6 @@ jobs:
 
       - name: Unzip Source Code & Fix Project Structure
         run: |
-          # Find zip file and extract with double quotes to handle spaces/brackets
           ZIP_FILE=$(find . -maxdepth 2 -name "*.zip" | head -n 1)
           echo "Unzipping file: $ZIP_FILE"
           unzip -o "$ZIP_FILE" -d ./extracted_app
@@ -42,7 +41,7 @@ jobs:
           echo "GEMINI_API_KEY=AIzaSyPlaceholderKeyForBuildPurposes123" > app/.env
           echo "GEMINI_API_KEY=MY_GEMINI_API_KEY" > app/.env.example
 
-          # Write app/build.gradle.kts
+          # Write app/build.gradle.kts with compileSdk = 36
           cat << 'EOF' > app/build.gradle.kts
           import com.google.gms.googleservices.GoogleServicesPlugin.MissingGoogleServicesStrategy
 
@@ -57,12 +56,12 @@ jobs:
 
           android {
               namespace = "com.example"
-              compileSdk = 35
+              compileSdk = 36
 
               defaultConfig {
                   applicationId = "com.vidiopen.videoplayer"
                   minSdk = 24
-                  targetSdk = 35
+                  targetSdk = 36
                   versionCode = 1
                   versionName = "1.0"
                   testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
