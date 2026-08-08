@@ -21,16 +21,21 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Android SDK & Accept Licenses
+      - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Auto-Generate Gradle Wrapper
+      - name: Locate Project Root & Build
         run: |
+          # Find directory containing build.gradle.kts or build.gradle
+          BUILD_DIR=$(dirname $(find . -maxdepth 3 -name "build.gradle.kts" -o -name "build.gradle" | head -n 1))
+          echo "Project directory found at: $BUILD_DIR"
+          cd "$BUILD_DIR"
+
+          # Create wrapper if missing
           gradle wrapper --gradle-version 8.7
           chmod +x gradlew
 
-      - name: Setup Environment Variables & Keystores
-        run: |
+          # Setup Env & Dummy Keystore
           if [ ! -f .env ]; then
             echo "GEMINI_API_KEY=AIzaSyPlaceholderKeyForBuildPurposes123" > .env
           fi
@@ -39,12 +44,8 @@ jobs:
             keytool -genkeypair -v -keystore my-upload-key.jks -alias upload -keyalg RSA -keysize 2048 -validity 10000 -storepass dummyPass123 -keypass dummyPass123 -dname "CN=Build, OU=Dev, O=App, L=City, ST=State, C=IN"
           fi
 
-          if [ ! -f debug.keystore ]; then
-            keytool -genkeypair -v -keystore debug.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Android Debug, O=Android, C=US"
-          fi
-
-      - name: Build Debug APK, Release APK & AAB
-        run: ./gradlew assembleDebug assembleRelease bundleRelease --no-daemon --stacktrace
+          # Execute Build
+          ./gradlew assembleDebug assembleRelease bundleRelease --no-daemon --stacktrace
         env:
           KEYSTORE_PATH: "my-upload-key.jks"
           STORE_PASSWORD: "dummyPass123"
@@ -55,17 +56,17 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Vidiopen-Debug-APK
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: "**/app/build/outputs/apk/debug/app-debug.apk"
 
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
           name: Vidiopen-Release-APK
-          path: app/build/outputs/apk/release/*.apk
+          path: "**/app/build/outputs/apk/release/*.apk"
 
       - name: Upload Release AAB
         uses: actions/upload-artifact@v4
         with:
           name: Vidiopen-Release-AAB
-          path: app/build/outputs/bundle/release/*.aab
+          path: "**/app/build/outputs/bundle/release/*.aab"
           
