@@ -35,7 +35,13 @@ jobs:
 
           cp -r $PROJ_DIR/* .
 
-          # Create a perfectly valid app/build.gradle.kts without syntax errors
+          # Create both .env and .env.example files at root and app directory
+          echo "GEMINI_API_KEY=AIzaSyPlaceholderKeyForBuildPurposes123" > .env
+          echo "GEMINI_API_KEY=MY_GEMINI_API_KEY" > .env.example
+          echo "GEMINI_API_KEY=AIzaSyPlaceholderKeyForBuildPurposes123" > app/.env
+          echo "GEMINI_API_KEY=MY_GEMINI_API_KEY" > app/.env.example
+
+          # Generate clean app/build.gradle.kts
           cat << 'EOF' > app/build.gradle.kts
           import com.google.gms.googleservices.GoogleServicesPlugin.MissingGoogleServicesStrategy
 
@@ -106,6 +112,7 @@ jobs:
           secrets {
               propertiesFileName = ".env"
               defaultPropertiesFileName = ".env.example"
+              ignoreList.add("keyToIgnore")
           }
 
           googleServices {
@@ -164,12 +171,8 @@ jobs:
       - name: Setup Gradle Environment
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Setup Keys & Environment Variables
+      - name: Setup Keystores
         run: |
-          if [ ! -f .env ]; then
-            echo "GEMINI_API_KEY=AIzaSyPlaceholderKeyForBuildPurposes123" > .env
-          fi
-
           if [ ! -f my-upload-key.jks ]; then
             keytool -genkeypair -v -keystore my-upload-key.jks -alias upload -keyalg RSA -keysize 2048 -validity 10000 -storepass dummyPass123 -keypass dummyPass123 -dname "CN=Build, OU=Dev, O=App, L=City, ST=State, C=IN"
           fi
