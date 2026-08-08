@@ -171,18 +171,19 @@ jobs:
 
       - name: Setup Keystores
         run: |
-          if [ ! -f my-upload-key.jks ]; then
-            keytool -genkeypair -v -keystore my-upload-key.jks -alias upload -keyalg RSA -keysize 2048 -validity 10000 -storepass dummyPass123 -keypass dummyPass123 -dname "CN=Build, OU=Dev, O=App, L=City, ST=State, C=IN"
-          fi
+          # Generate keystore
+          keytool -genkeypair -v -keystore my-upload-key.jks -alias upload -keyalg RSA -keysize 2048 -validity 10000 -storepass dummyPass123 -keypass dummyPass123 -dname "CN=Build, OU=Dev, O=App, L=City, ST=State, C=IN"
+          
+          keytool -genkeypair -v -keystore debug.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Android Debug, O=Android, C=US"
 
-          if [ ! -f debug.keystore ]; then
-            keytool -genkeypair -v -keystore debug.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Android Debug, O=Android, C=US"
-          fi
+          # Copy keystores to app directory as well to cover all path references
+          cp my-upload-key.jks app/
+          cp debug.keystore app/
 
       - name: Build Debug, Release APK & AAB
         run: gradle assembleDebug assembleRelease bundleRelease --no-daemon -Dorg.gradle.jvmargs="-Xmx3072m -XX:MaxMetaspaceSize=512m"
         env:
-          KEYSTORE_PATH: "my-upload-key.jks"
+          KEYSTORE_PATH: "${{ github.workspace }}/app/my-upload-key.jks"
           STORE_PASSWORD: "dummyPass123"
           KEY_PASSWORD: "dummyPass123"
           GEMINI_API_KEY: "AIzaSyPlaceholderKeyForBuildPurposes123"
