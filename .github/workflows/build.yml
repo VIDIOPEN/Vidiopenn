@@ -20,19 +20,16 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: gradle
 
       - name: Make Gradle Executable
         run: chmod +x gradlew
 
       - name: Setup Environment Variables & Dummy Keystore
         run: |
-          # Setup .env file
           if [ ! -f .env ]; then
             echo "GEMINI_API_KEY=AIzaSyPlaceholderKeyForBuildPurposes123" > .env
           fi
 
-          # Create a dummy keystore if release keystore is missing
           if [ ! -f my-upload-key.jks ]; then
             keytool -genkeypair -v -keystore my-upload-key.jks -alias upload -keyalg RSA -keysize 2048 -validity 10000 -storepass dummyPass123 -keypass dummyPass123 -dname "CN=Build, OU=Dev, O=App, L=City, ST=State, C=IN"
           fi
@@ -67,4 +64,4 @@ jobs:
         with:
           name: Vidiopen-Release-AAB
           path: app/build/outputs/bundle/release/*.aab
-
+          
